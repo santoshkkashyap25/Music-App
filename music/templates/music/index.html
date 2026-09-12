@@ -24,7 +24,7 @@
             </div>
         </div>
         <div class="hero-actions">
-            {% if user.is_authenticated and user.profile.is_artist or user.is_staff %}
+            {% if is_creator %}
             <a href="{% url 'music:album-add' %}" class="btn-primary-custom">
                 <i class="fa-solid fa-plus"></i>
                 <span>Publish New Album</span>
@@ -151,14 +151,23 @@
     </div>
     {% else %}
     <div class="empty-state">
+        <!-- v3 -->
         <div class="empty-icon">
             <i class="fa-solid fa-music"></i>
         </div>
         <h3>No Albums Found</h3>
-        <p>No albums match your current criteria. Try resetting filters or add a new album to build your music library.</p>
-        <a href="{% url 'music:album-add' %}" class="btn-primary-custom">
-            <i class="fa-solid fa-plus"></i> Add Album
-        </a>
+        {% if is_creator %}
+            {% if selected_filter != 'favorites' %}
+            <p>No albums match your current criteria. Try resetting filters or add a new album to build your music library.</p>
+            <a href="{% url 'music:album-add' %}" class="btn-primary-custom">
+                <i class="fa-solid fa-plus"></i> Add Album
+            </a>
+            {% else %}
+            <p>No albums match your current criteria. Try resetting filters.</p>
+            {% endif %}
+        {% else %}
+        <p>No albums match your current criteria. Try resetting filters.</p>
+        {% endif %}
     </div>
     {% endif %}
 {% endblock %}

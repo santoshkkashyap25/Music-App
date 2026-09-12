@@ -50,6 +50,17 @@ class IndexView(generic.ListView):
         context['search_query'] = self.request.GET.get('q', '')
         context['total_albums'] = Album.objects.count()
         context['total_songs'] = Song.objects.count()
+        
+        # Robust check for creator status
+        user = self.request.user
+        is_creator = False
+        if user.is_authenticated:
+            if user.is_staff:
+                is_creator = True
+            elif hasattr(user, 'profile') and user.profile.is_artist:
+                is_creator = True
+        context['is_creator'] = is_creator
+        
         return context
 
 

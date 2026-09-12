@@ -55,7 +55,7 @@
                     <span>Favorites</span>
                 </a>
             </li>
-            {% if user.is_authenticated and user.profile.is_artist or user.is_staff %}
+            {% if user.is_staff or user.profile.is_artist %}
             <li>
                 <a href="{% url 'music:album-add' %}" class="nav-link {% block nav_add %}{% endblock %}" title="Artist Studio">
                     <i class="fa-solid fa-circle-plus" style="color: var(--accent-primary);"></i>
