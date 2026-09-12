@@ -1,25 +1,86 @@
 {% extends 'music/layout.html' %}
-{% block title %}Add Album{% endblock %}
-{% block albums_active %}active {% endblock %}
-{% block body %}
+{% load static %}
 
-<div class="container-fluid">
-	<div class="row">
-		<div class="col-sm-12 col-md-7">
-			<div class="panel panel-default">
-				<div class="panel-body">
-<form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
-	{% csrf_token %}
-	{% include 'music/form-template.html' %}
-	<div class="form-group">
-		<div class="col-sm-offset-2 col-sm-10">
-			<button type="submit" class="btn btn-success">Submit</button>
-		</div>
-	</div>
-</form>					
-				</div>
-			</div>
-		</div>
-	</div>
+{% block title %}{% if object %}Edit {{ object.album_title }}{% else %}Add New Album{% endif %} — WaveStream{% endblock %}
+{% block nav_add %}{% if not object %}active{% endif %}{% endblock %}
+
+{% block body %}
+<div class="form-card">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div class="brand-icon" style="margin: 0 auto 1rem auto; width: 48px; height: 48px; font-size: 1.3rem;">
+            <i class="fa-solid fa-compact-disc"></i>
+        </div>
+        <h2>{% if object %}Edit Album{% else %}Add New Album{% endif %}</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.35rem;">
+            {% if object %}Update your album details below{% else %}Fill in details to catalog a new record in your library{% endif %}
+        </p>
+    </div>
+
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.artist.id_for_label }}">Artist Name</label>
+            {{ form.artist }}
+            {% if form.artist.errors %}<div class="form-errors">{{ form.artist.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.album_title.id_for_label }}">Album Title</label>
+            {{ form.album_title }}
+            {% if form.album_title.errors %}<div class="form-errors">{{ form.album_title.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.genre.id_for_label }}">Genre</label>
+            {{ form.genre }}
+            {% if form.genre.errors %}<div class="form-errors">{{ form.genre.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.album_logo.id_for_label }}">Album Cover Artwork</label>
+            {{ form.album_logo }}
+            {% if form.album_logo.errors %}<div class="form-errors">{{ form.album_logo.errors }}</div>{% endif %}
+            <div class="form-help">Upload high-resolution album cover image (JPEG, PNG, WebP).</div>
+        </div>
+
+        <!-- Cover Preview Container -->
+        <div id="coverPreviewContainer" style="margin-bottom: 1.5rem; text-align: center; {% if not object.album_logo %}display: none;{% endif %}">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Preview</label>
+            <img id="coverPreviewImg" src="{% if object.album_logo %}{{ object.album_logo.url }}{% endif %}" alt="Preview" style="max-width: 160px; max-height: 160px; border-radius: var(--radius-md); border: 1px solid var(--border-glass); object-fit: cover;">
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn-primary-custom" style="flex: 1; justify-content: center;">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Save Album</span>
+            </button>
+            <a href="{% if object %}{% url 'music:detail' object.id %}{% else %}{% url 'music:index' %}{% endif %}" class="btn-secondary-custom">
+                Cancel
+            </a>
+        </div>
+    </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInput = document.querySelector('input[type="file"]');
+        const previewContainer = document.getElementById('coverPreviewContainer');
+        const previewImg = document.getElementById('coverPreviewImg');
+
+        if (fileInput && previewImg) {
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        previewImg.src = event.target.result;
+                        previewContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

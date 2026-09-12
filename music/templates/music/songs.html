@@ -1,0 +1,106 @@
+{% extends 'music/layout.html' %}
+{% load static %}
+
+{% block title %}All Tracks — WaveStream{% endblock %}
+{% block nav_songs %}active{% endblock %}
+
+{% block body %}
+    <div class="section-header">
+        <div>
+            <h2>
+                <i class="fa-solid fa-music" style="color: var(--accent-primary);"></i>
+                <span>All Tracks</span>
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+                Browse, stream, and discover songs across your entire music catalog.
+            </p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="{% url 'music:songs' %}?filter=favorites" class="btn-secondary-custom {% if selected_filter == 'favorites' %}active{% endif %}">
+                <i class="fa-solid fa-heart" style="color: var(--accent-favorite);"></i>
+                <span>Favorite Songs</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="tracklist-card">
+        {% if all_songs %}
+        <table class="track-table">
+            <thead>
+                <tr>
+                    <th class="track-number-col">#</th>
+                    <th>Title</th>
+                    <th>Album</th>
+                    <th>Artist</th>
+                    <th class="track-duration-col">Duration</th>
+                    <th class="track-actions-col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song in all_songs %}
+                <tr class="track-row"
+                    data-id="{{ song.id }}"
+                    data-action="play-track"
+                    data-title="{{ song.song_title }}"
+                    data-artist="{{ song.album.artist }}"
+                    data-album="{{ song.album.album_title }}"
+                    data-cover="{% if song.album.album_logo %}{{ song.album.album_logo.url }}{% else %}{% static 'music/images/default_album.svg' %}{% endif %}"
+                    data-audio="{{ song.get_audio_url }}"
+                    data-duration="{{ song.duration|default:'3:30' }}"
+                    data-favorite="{{ song.is_favorite|yesno:'true,false' }}">
+                    <td class="track-number-col">
+                        <span class="track-number">{{ forloop.counter }}</span>
+                        <button class="track-play-btn" title="Play Track">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                    </td>
+                    <td>
+                        <div class="track-title-main">{{ song.song_title }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">
+                            {{ song.file_type|upper|default:"MP3" }}
+                            {% if song.audio_file %}
+                                <span style="color: var(--accent-primary); margin-left: 6px;">• High Quality Audio</span>
+                            {% else %}
+                                <span style="color: var(--text-dim); margin-left: 6px;">• Synth Preview</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{% url 'music:detail' song.album.id %}" style="color: var(--text-muted); font-weight: 500;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">
+                            {{ song.album.album_title }}
+                        </a>
+                    </td>
+                    <td style="color: var(--text-muted);">
+                        {{ song.album.artist }}
+                    </td>
+                    <td class="track-duration-col">
+                        {{ song.duration|default:"3:30" }}
+                    </td>
+                    <td class="track-actions-col">
+                        <!-- Favorite Song -->
+                        <button class="btn-icon {% if song.is_favorite %}active-fav{% endif %}" 
+                                data-action="fav-song" 
+                                data-id="{{ song.id }}" 
+                                title="Favorite Song"
+                                style="width: 32px; height: 32px; font-size: 0.85rem;">
+                            <i class="{% if song.is_favorite %}fa-solid fa-heart{% else %}fa-regular fa-heart{% endif %}"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fa-solid fa-music"></i>
+            </div>
+            <h3>No Tracks Found</h3>
+            <p>You have not added any songs yet. Open an album to add tracks or reset search filters.</p>
+            <a href="{% url 'music:index' %}" class="btn-primary-custom">
+                <i class="fa-solid fa-compact-disc"></i> Explore Albums
+            </a>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,78 +1,189 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>{% block title %}Music{% endblock %}</title>
-<!-- Loads the path to static files -->
 {% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'music/style.css' %}">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WaveStream — Modern Music Experience{% endblock %}</title>
+    
+    <!-- Modern Typography from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-<link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-
-<script src="https://code.jquery.com/jquery-1.12.3.min.js" integrity="sha256-aaODHAgvwQW1bFOGXMeX+pC4PZIPsvn2h1sArYOhgXQ=" crossorigin="anonymous"></script>
-
+    <!-- WaveStream Custom Styles -->
+    <link rel="stylesheet" href="{% static 'music/style.css' %}?v=2.1">
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
-<nav class="navbar navbar-inverse">
-    <div class="container-fluid">
-        
-        <!-- Header -->
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#topNavBar">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="{% url 'music:index' %}"> Music </a>
+
+    <!-- Top Navigation Bar -->
+    <header class="navbar-custom">
+        <a href="{% url 'music:index' %}" class="nav-brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-wave-square"></i>
+            </div>
+            <span>WaveStream</span>
+        </a>
+
+        <!-- Global Search -->
+        <form class="nav-search" method="get" action="{% url 'music:index' %}">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" name="q" placeholder="Search albums, artists, genres..." value="{{ search_query|default:'' }}">
+        </form>
+
+        <!-- Navigation Links -->
+        <ul class="nav-links" id="navLinks">
+            <li>
+                <a href="{% url 'music:index' %}" class="nav-link {% block nav_albums %}{% endblock %}">
+                    <i class="fa-solid fa-compact-disc"></i>
+                    <span>Albums</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'music:songs' %}" class="nav-link {% block nav_songs %}{% endblock %}">
+                    <i class="fa-solid fa-music"></i>
+                    <span>Songs</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'music:index' %}?filter=favorites" class="nav-link {% block nav_favorites %}{% endblock %}">
+                    <i class="fa-solid fa-heart"></i>
+                    <span>Favorites</span>
+                </a>
+            </li>
+            {% if user.is_authenticated and user.profile.is_artist or user.is_staff %}
+            <li>
+                <a href="{% url 'music:album-add' %}" class="nav-link {% block nav_add %}{% endblock %}" title="Artist Studio">
+                    <i class="fa-solid fa-circle-plus" style="color: var(--accent-primary);"></i>
+                    <span>Publish Album</span>
+                </a>
+            </li>
+            {% endif %}
+
+            <!-- Auth Section -->
+            {% if user.is_authenticated %}
+            <li>
+                <span class="nav-link" style="gap: 0.5rem; display: inline-flex; align-items: center;">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span>{{ user.username }}</span>
+                    {% if user.profile.is_artist %}
+                        <span class="badge-role artist"><i class="fa-solid fa-microphone-lines"></i> Artist</span>
+                    {% else %}
+                        <span class="badge-role listener"><i class="fa-solid fa-headphones"></i> Listener</span>
+                    {% endif %}
+                </span>
+            </li>
+            <li>
+                <a href="{% url 'music:logout' %}" class="nav-link" title="Logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+            {% else %}
+            <li>
+                <a href="{% url 'music:login' %}" class="nav-link {% block nav_login %}{% endblock %}">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Sign In</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'music:register' %}" class="btn-primary-custom" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                    <span>Join</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <!-- Mobile Navigation Toggle -->
+        <button class="mobile-toggle" id="mobileNavToggle" aria-label="Toggle Navigation">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- Flash Message Toasts -->
+    {% if messages %}
+    <div class="toast-container">
+        {% for message in messages %}
+        <div class="toast-msg {% if message.tags %}{{ message.tags }}{% endif %}">
+            <i class="fa-solid {% if 'success' in message.tags %}fa-circle-check{% elif 'error' in message.tags %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+            <span>{{ message }}</span>
         </div>
-        		 <!-- Items -->
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li class="">
-                    <a href="{% url 'music:index' %}" title="">
-                        <span class="glyphicon glyphicon-cd" arid-hidden="true"></span> &nbsp; Albums
-                    </a>
-                </li>
-                <li class="">
-                    <a href="{% url 'music:index' %}" title="">
-                        <span class="glyphicon glyphicon-music" arid-hidden="true"></span> &nbsp; Songs
-                    </a>
-                </li>
-			</ul>
-			<form class="navbar-form navbar-left" role="search" method="get" action="#">
-				<div class="form-group">
-					<input type="text" class="form-control" name="q" value="">
-				</div>
-				<button type="submit" class="btn btn-default">Search</button>
-			</form>
-			<ul class="nav navbar-nav navbar-right">
-			<li class="">
-					<a href="{% url 'music:album-add' %}">
-						<span class="glyphicon glyphicon-plus" aria-hidden="true">
-							
-						</span> &nbsp;
-						Add Album
-					</a>
-				</li>
-				<li class="">
-					<a href="#">
-						<span class="glyphicon glyphicon-off" aria-hidden="true">
-							
-						</span> &nbsp;
-						Logout
-					</a>
-				</li>
-					
-			</ul>
-		</div>
-	</div>
-</nav>
-{% block body %}
-{% endblock %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content Body -->
+    <main class="main-container">
+        {% block body %}{% endblock %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Persistent Bottom Audio Player -->
+    <footer class="music-player-bar" id="wavePlayerBar">
+        <!-- Left: Current Track Details -->
+        <div class="player-track-info">
+            <img src="{% static 'music/images/default_album.svg' %}" alt="Now Playing" class="player-thumb" id="playerTrackCover" onerror="this.onerror=null;this.src='{% static 'music/images/default_album.svg' %}';">
+            <div class="player-meta">
+                <div class="player-title" id="playerTrackTitle">Ready to Play</div>
+                <div class="player-artist" id="playerTrackArtist">Select an album or track</div>
+            </div>
+            <button class="btn-icon" id="playerTrackFav" data-action="fav-song" data-id="" title="Save to Favorites">
+                <i class="fa-regular fa-heart"></i>
+            </button>
+        </div>
+
+        <!-- Center: Playback Controls & Timeline -->
+        <div class="player-center">
+            <div class="player-buttons">
+                <button class="control-btn" id="playerShuffleBtn" title="Shuffle">
+                    <i class="fa-solid fa-shuffle"></i>
+                </button>
+                <button class="control-btn" id="playerPrevBtn" title="Previous Track">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
+                <button class="play-pause-btn" id="playerPlayBtn" title="Play/Pause">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <button class="control-btn" id="playerNextBtn" title="Next Track">
+                    <i class="fa-solid fa-forward-step"></i>
+                </button>
+                <button class="control-btn" id="playerRepeatBtn" title="Repeat Track">
+                    <i class="fa-solid fa-repeat"></i>
+                </button>
+            </div>
+
+            <div class="progress-bar-wrap">
+                <span class="time-stamp" id="playerCurrentTime">0:00</span>
+                <div class="progress-track" id="playerProgressTrack">
+                    <div class="progress-fill" id="playerProgressFill"></div>
+                </div>
+                <span class="time-stamp" id="playerDurationTime">0:00</span>
+            </div>
+        </div>
+
+        <!-- Right: Volume & Sound Equalizer -->
+        <div class="player-right">
+            <div class="visualizer-box">
+                <div class="viz-bar"></div>
+                <div class="viz-bar"></div>
+                <div class="viz-bar"></div>
+                <div class="viz-bar"></div>
+            </div>
+            <div class="volume-wrap">
+                <button class="control-btn" id="playerVolumeBtn" title="Mute/Unmute">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <input type="range" class="volume-slider" id="playerVolumeSlider" min="0" max="1" step="0.01" value="0.8">
+            </div>
+        </div>
+    </footer>
+
+    <!-- Audio Player Engine -->
+    <script src="{% static 'music/player.js' %}?v=2.1"></script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

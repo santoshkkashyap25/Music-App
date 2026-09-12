@@ -1,49 +1,203 @@
 {% extends 'music/layout.html' %}
-{% block title %}Album Details{% endblock %}
-{% block albums_active %} active {% endblock %}
-{% block body %}
-<div class="container-fluid songs-container">
-	<div class="row">
-		<!-- left album info -->
-		<div class="col-sm-4 col-md-3">
-			<div class="panel panel-default">
-				<div class="panel-body">
-<a href="{% url 'music:detail' album.id %}">
-	<img src="{{album.album_logo.url}}" class="img-responsive">
-</a>
-<h1>{{album.album_title}}<h6>{{album.genre}}</h6></h1>
-<h2>{{album.artist}}</h2>
-				</div>
-			</div>
-		</div>
-<!-- right album info -->
-<div class="col-sm-8 col-md-9">
-	<ul class="nav nav-pills" style="margin-bottom: 10px;">
-		<li class="active">
-			<a href="{% url 'music:detail' album.id %}">View All</a>
-		</li>
-	</ul>
-	<div class="panel panel-default">
-		<div class="panel-body">
-			<h3>All Songs</h3>
-			<table class="table">
-				<thead>
-					<tr>
-						<th>Title</th>
-						<th>Genre</th>
-						<th>Artist</th>
-					</tr>
-					<tr>
-						<th>{{album.album_title}}</th>
-						<th>{{album.genre}}</th>
-						<th>{{album.artist}}</th>
-					</tr>
+{% load static %}
 
-				</thead>
-			</table>
-		</div>
-	</div>
-</div>
-	</div>
-</div>
+{% block title %}{{ album.album_title }} by {{ album.artist }} — WaveStream{% endblock %}
+{% block nav_albums %}active{% endblock %}
+
+{% block body %}
+    <!-- Album Hero Showcase -->
+    <div class="album-detail-hero">
+        {% if album.album_logo %}
+        <img src="{{ album.album_logo.url }}" alt="{{ album.album_title }}" class="detail-cover" onerror="this.onerror=null;this.src='{% static 'music/images/default_album.svg' %}'">
+        {% else %}
+        <img src="{% static 'music/images/default_album.svg' %}" alt="{{ album.album_title }}" class="detail-cover">
+        {% endif %}
+
+        <div class="detail-meta-group">
+            <span class="detail-type">Album</span>
+            <h1 class="detail-title">{{ album.album_title }}</h1>
+            <div class="detail-artist-row">
+                <span style="font-weight: 700; color: #fff;">{{ album.artist }}</span>
+                <span>•</span>
+                <span class="badge-genre">{{ album.genre }}</span>
+                <span>•</span>
+                <span>{{ songs|length }} song{{ songs|length|pluralize }}</span>
+            </div>
+
+            <!-- Detail Actions -->
+            <div class="detail-actions-bar">
+                <!-- Play Full Album -->
+                <button class="btn-primary-custom" 
+                        data-action="play-album" 
+                        data-id="{{ album.id }}" 
+                        data-title="{{ album.album_title }}" 
+                        data-artist="{{ album.artist }}"
+                        data-cover="{% if album.album_logo %}{{ album.album_logo.url }}{% else %}{% static 'music/images/default_album.svg' %}{% endif %}"
+                        data-queue='{{ album_queue_json|safe }}'>
+                    <i class="fa-solid fa-play"></i>
+                    <span>Play Album</span>
+                </button>
+
+                <!-- Favorite Album -->
+                <button class="btn-icon {% if album.is_favorite %}active-fav{% endif %}" 
+                        data-action="fav-album" 
+                        data-id="{{ album.id }}" 
+                        title="Favorite Album">
+                    <i class="{% if album.is_favorite %}fa-solid fa-heart{% else %}fa-regular fa-heart{% endif %}"></i>
+                </button>
+
+                {% if is_owner %}
+                <!-- Edit Album -->
+                <a href="{% url 'music:album-update' album.id %}" class="btn-secondary-custom" title="Edit Album Details">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Edit</span>
+                </a>
+
+                <!-- Delete Album -->
+                <form action="{% url 'music:album-delete' album.id %}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this album?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-secondary-custom" style="color: var(--accent-favorite); border-color: rgba(244, 63, 94, 0.3);">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>Delete</span>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid: Tracklist & Quick Add Track -->
+    <div {% if is_owner %}style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: start;"{% endif %}>
+        <!-- Left: Tracklist Table -->
+        <div class="tracklist-card">
+            <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+                <span>Tracklist</span>
+                <span style="font-size: 0.85rem; color: var(--text-dim); font-weight: 400;">
+                    Click any track to stream
+                </span>
+            </h3>
+
+            {% if songs %}
+            <table class="track-table">
+                <thead>
+                    <tr>
+                        <th class="track-number-col">#</th>
+                        <th>Title</th>
+                        <th class="track-duration-col">Duration</th>
+                        <th class="track-actions-col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for song in songs %}
+                    <tr class="track-row" 
+                        data-id="{{ song.id }}"
+                        data-action="play-track"
+                        data-title="{{ song.song_title }}"
+                        data-artist="{{ album.artist }}"
+                        data-album="{{ album.album_title }}"
+                        data-cover="{% if album.album_logo %}{{ album.album_logo.url }}{% else %}{% static 'music/images/default_album.svg' %}{% endif %}"
+                        data-audio="{{ song.get_audio_url }}"
+                        data-duration="{{ song.duration|default:'3:30' }}"
+                        data-favorite="{{ song.is_favorite|yesno:'true,false' }}">
+                        <td class="track-number-col">
+                            <span class="track-number">{{ forloop.counter }}</span>
+                            <button class="track-play-btn" title="Play Track">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                        </td>
+                        <td>
+                            <div class="track-title-main">{{ song.song_title }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-dim);">
+                                {{ song.file_type|upper|default:"MP3" }}
+                                {% if song.audio_file %}
+                                    <span style="color: var(--accent-primary); margin-left: 6px;">• High Quality Audio</span>
+                                {% else %}
+                                    <span style="color: var(--text-dim); margin-left: 6px;">• Synth Preview</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="track-duration-col">
+                            {{ song.duration|default:"3:30" }}
+                        </td>
+                        <td class="track-actions-col">
+                            <!-- Favorite Song -->
+                            <button class="btn-icon {% if song.is_favorite %}active-fav{% endif %}" 
+                                    data-action="fav-song" 
+                                    data-id="{{ song.id }}" 
+                                    title="Favorite Song"
+                                    style="width: 30px; height: 30px; font-size: 0.85rem;">
+                                <i class="{% if song.is_favorite %}fa-solid fa-heart{% else %}fa-regular fa-heart{% endif %}"></i>
+                            </button>
+
+                            {% if is_owner %}
+                            <!-- Delete Song -->
+                            <form action="{% url 'music:song-delete' song.id %}" method="post" style="display: inline;" onsubmit="return confirm('Remove track {{ song.song_title }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-icon" title="Remove Track" style="width: 30px; height: 30px; font-size: 0.85rem;">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state" style="padding: 2.5rem 1rem;">
+                <div class="empty-icon" style="font-size: 2rem;">
+                    <i class="fa-solid fa-music"></i>
+                </div>
+                <h4>No tracks added yet</h4>
+                <p>{% if is_owner %}Add tracks using the form to start building your album playlist.{% else %}No tracks have been published for this album yet.{% endif %}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if is_owner %}
+        <!-- Right: Add Song Quick Panel (Visible only to Creator/Admin) -->
+        <div class="tracklist-card" style="background: rgba(30, 41, 59, 0.5);">
+            <h3 style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-plus" style="color: var(--accent-primary);"></i>
+                <span>Add Track to Album</span>
+            </h3>
+
+            <form action="{% url 'music:song-add' album.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_song_title">Song Title</label>
+                    <input type="text" name="song_title" id="id_song_title" class="form-input" placeholder="e.g. Midnight Waves" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="id_duration">Duration</label>
+                        <input type="text" name="duration" id="id_duration" class="form-input" placeholder="3:45" value="3:30">
+                    </div>
+                    <div class="form-group">
+                        <label for="id_file_type">Format</label>
+                        <input type="text" name="file_type" id="id_file_type" class="form-input" placeholder="mp3" value="mp3">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_audio_file">Audio File (Optional)</label>
+                    <input type="file" name="audio_file" id="id_audio_file" class="form-input-file" accept="audio/*">
+                    <div class="form-help">Upload an MP3/WAV file, or leave blank to use the built-in ambient synth preview.</div>
+                </div>
+
+                <button type="submit" class="btn-primary-custom" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Upload Track</span>
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Hidden Queue JSON Data for WebPlayer -->
+    <script id="initialQueueData" type="application/json">
+        {{ album_queue_json|safe }}
+    </script>
 {% endblock %}

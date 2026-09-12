@@ -1,0 +1,50 @@
+{% extends 'music/layout.html' %}
+
+{% block title %}Sign In — WaveStream{% endblock %}
+{% block nav_login %}active{% endblock %}
+
+{% block body %}
+<div class="form-card" style="max-width: 440px;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div class="brand-icon" style="margin: 0 auto 1rem auto; width: 52px; height: 52px; font-size: 1.4rem;">
+            <i class="fa-solid fa-user-lock"></i>
+        </div>
+        <h2>Welcome Back</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.35rem;">
+            Sign in to manage and curate your library
+        </p>
+    </div>
+
+    <form action="{% url 'music:login' %}" method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-errors" style="margin-bottom: 1rem; text-align: center;">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="form-errors">{{ form.username.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password.id_for_label }}">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="form-errors">{{ form.password.errors }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn-primary-custom" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            <span>Sign In</span>
+        </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.75rem; font-size: 0.9rem; color: var(--text-muted);">
+        Don't have an account? 
+        <a href="{% url 'music:register' %}" style="color: var(--accent-primary); font-weight: 600;">Create one now</a>
+    </div>
+</div>
+{% endblock %}

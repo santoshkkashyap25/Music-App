@@ -1,40 +1,164 @@
 {% extends 'music/layout.html' %}
-{% block albums_active %}active {% endblock %}
-{% block body %}
+{% load static %}
 
-<div class="albums-container container-fluid">
-	<div class="row">
-		{% for album in all_albums %}
-		<div class="col-sm-4 col-lg-2">
-			<div class="thumbnail">
-				
-<!--Album Logo-->
-<a href="{% url 'music:detail' album.id %}">
-	<img src="{{album.album_logo.url}}" class="img-responsive">
-</a>
-<div class="caption">
-	<h2>{{album.album_title}}</h2>
-	<h4>{{album.artist}}</h4>
-	<!-- Details -->
-<a href="{% url 'music:detail' album.id %}" class="btn btn-primary btn-sm">
-	View Details
-</a>
-<!--Delete -->
-<form action="{% url 'music:album-delete' album.id %}" method="post" style="display:inline;">
-	{% csrf_token %}
-<input type="hidden" name="album_id" value="{{album.id}}"/>
-<button type="submit" class="btn btn-default btn-sm">
-	<span class="glyphicon glyphicon-trash"></span>
-</button>
-</form>
-<!-- Favorite -->
-<a href="#" class="btn btn-default btn-sm btn-favorite">
-	<span class="glyphicon glyphicon-star {% if album.is_favorite %}active{% endif %}"></span>
-</a>
-</div>
-			</div>
-		</div>
-		{% endfor %}
-	</div>
-</div>
+{% block title %}WaveStream — Discover Music{% endblock %}
+{% block nav_albums %}{% if not selected_filter %}active{% endif %}{% endblock %}
+{% block nav_favorites %}{% if selected_filter == 'favorites' %}active{% endif %}{% endblock %}
+
+{% block body %}
+    <!-- Hero Banner (Shows on main browse) -->
+    {% if not search_query and not selected_filter %}
+    <div class="hero-banner">
+        <div class="hero-content">
+            <h1>Immerse Yourself in Pure Sound</h1>
+            <p>Explore your personal curated library, stream high-fidelity tracks, and organize albums seamlessly.</p>
+            <div class="stats-badges">
+                <div class="stat-item">
+                    <span class="stat-number">{{ total_albums }}</span>
+                    <span class="stat-label">Albums</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ total_songs }}</span>
+                    <span class="stat-label">Tracks</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-actions">
+            {% if user.is_authenticated and user.profile.is_artist or user.is_staff %}
+            <a href="{% url 'music:album-add' %}" class="btn-primary-custom">
+                <i class="fa-solid fa-plus"></i>
+                <span>Publish New Album</span>
+            </a>
+            {% else %}
+            <a href="{% url 'music:songs' %}" class="btn-primary-custom">
+                <i class="fa-solid fa-headphones"></i>
+                <span>Start Listening</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filter Chips Bar -->
+    <div class="filter-bar">
+        <a href="{% url 'music:index' %}{% if search_query %}?q={{ search_query }}{% endif %}" 
+           class="filter-pill {% if not selected_genre and not selected_filter %}active{% endif %}">
+            All Genres
+        </a>
+
+        <a href="{% url 'music:index' %}?filter=favorites{% if search_query %}&q={{ search_query }}{% endif %}" 
+           class="filter-pill {% if selected_filter == 'favorites' %}active{% endif %}">
+            <i class="fa-solid fa-heart" style="color: var(--accent-favorite);"></i> Favorites
+        </a>
+
+        {% for g in genres %}
+        <a href="{% url 'music:index' %}?genre={{ g }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+           class="filter-pill {% if selected_genre|lower == g|lower %}active{% endif %}">
+            {{ g }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Section Header -->
+    <div class="section-header">
+        <h2>
+            {% if search_query %}
+                <span>Results for "{{ search_query }}"</span>
+            {% elif selected_filter == 'favorites' %}
+                <i class="fa-solid fa-heart" style="color: var(--accent-favorite);"></i>
+                <span>Favorite Albums</span>
+            {% elif selected_genre %}
+                <span>{{ selected_genre }} Albums</span>
+            {% else %}
+                <i class="fa-solid fa-fire" style="color: #f59e0b;"></i>
+                <span>Featured Library</span>
+            {% endif %}
+        </h2>
+        <span style="color: var(--text-dim); font-size: 0.9rem;">
+            {{ all_albums|length }} album{{ all_albums|length|pluralize }}
+        </span>
+    </div>
+
+    <!-- Albums Grid -->
+    {% if all_albums %}
+    <div class="album-grid">
+        {% for album in all_albums %}
+        <div class="album-card">
+            <!-- Artwork Wrapper with Overlay Play -->
+            <div class="album-art-wrap">
+                <a href="{% url 'music:detail' album.id %}">
+                    {% if album.album_logo %}
+                    <img src="{{ album.album_logo.url }}" alt="{{ album.album_title }}" class="album-art-img" onerror="this.onerror=null;this.src='{% static 'music/images/default_album.svg' %}'">
+                    {% else %}
+                    <img src="{% static 'music/images/default_album.svg' %}" alt="{{ album.album_title }}" class="album-art-img">
+                    {% endif %}
+                </a>
+
+                <!-- Genre Overlay Tag on Cover -->
+                <span class="badge-genre-overlay">{{ album.genre }}</span>
+
+                <!-- Hover Play Button that starts album playback -->
+                <button class="album-play-overlay" 
+                        data-action="play-album" 
+                        data-id="{{ album.id }}" 
+                        data-title="{{ album.album_title }}" 
+                        data-artist="{{ album.artist }}"
+                        data-cover="{% if album.album_logo %}{{ album.album_logo.url }}{% else %}{% static 'music/images/default_album.svg' %}{% endif %}"
+                        data-queue='[{% for s in album.song_set.all %}{"id":{{ s.id }},"title":"{{ s.song_title|escapejs }}","artist":"{{ album.artist|escapejs }}","album":"{{ album.album_title|escapejs }}","cover":"{% if album.album_logo %}{{ album.album_logo.url }}{% else %}{% static 'music/images/default_album.svg' %}{% endif %}","audio":"{{ s.get_audio_url }}","duration":"{{ s.duration|default:'3:30' }}","is_favorite":{{ s.is_favorite|yesno:"true,false" }}}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                        title="Play Album">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+            </div>
+
+            <!-- Album Info -->
+            <div class="album-info">
+                <a href="{% url 'music:detail' album.id %}" class="album-title" title="{{ album.album_title }}">
+                    {{ album.album_title }}
+                </a>
+                <div class="album-artist">{{ album.artist }}</div>
+                
+                <div class="album-meta">
+                    <span class="album-track-count">
+                        <i class="fa-solid fa-music"></i> {{ album.song_count }} track{{ album.song_count|pluralize }}
+                    </span>
+                    <div class="album-actions">
+                        <!-- Favorite Button -->
+                        <button class="btn-icon {% if album.is_favorite %}active-fav{% endif %}" 
+                                data-action="fav-album" 
+                                data-id="{{ album.id }}" 
+                                title="Favorite Album">
+                            <i class="{% if album.is_favorite %}fa-solid fa-heart{% else %}fa-regular fa-heart{% endif %}"></i>
+                        </button>
+
+                        <!-- Creator & Staff Controls -->
+                        {% if user.is_staff or user.is_authenticated and album.user == user %}
+                        <a href="{% url 'music:album-update' album.id %}" class="btn-icon" title="Edit Album">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+
+                        <form action="{% url 'music:album-delete' album.id %}" method="post" style="display: inline;" onsubmit="return confirm('Delete this album and all its tracks?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-icon" title="Delete Album">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fa-solid fa-music"></i>
+        </div>
+        <h3>No Albums Found</h3>
+        <p>No albums match your current criteria. Try resetting filters or add a new album to build your music library.</p>
+        <a href="{% url 'music:album-add' %}" class="btn-primary-custom">
+            <i class="fa-solid fa-plus"></i> Add Album
+        </a>
+    </div>
+    {% endif %}
 {% endblock %}

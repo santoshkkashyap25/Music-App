@@ -1,0 +1,118 @@
+{% extends 'music/layout.html' %}
+
+{% block title %}Create Account — WaveStream{% endblock %}
+
+{% block body %}
+<div class="form-card" style="max-width: 480px;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div class="brand-icon" style="margin: 0 auto 1rem auto; width: 52px; height: 52px; font-size: 1.4rem;">
+            <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <h2>Join WaveStream</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.35rem;">
+            Create your account to start streaming & collecting
+        </p>
+    </div>
+
+    <form action="{% url 'music:register' %}" method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-errors" style="margin-bottom: 1rem; text-align: center;">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Role Selector Cards -->
+        <div class="form-group">
+            <label style="margin-bottom: 0.75rem; display: block; font-weight: 600;">Account Type</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <label class="role-card" id="roleCardListener">
+                    <input type="radio" name="role" value="listener" checked style="accent-color: var(--accent-primary); margin-bottom: 0.35rem;">
+                    <div class="role-icon"><i class="fa-solid fa-headphones"></i></div>
+                    <div class="role-title">Listener</div>
+                    <div class="role-desc">Stream library, curate favorites, and explore music.</div>
+                </label>
+                <label class="role-card" id="roleCardArtist">
+                    <input type="radio" name="role" value="artist" style="accent-color: var(--accent-primary); margin-bottom: 0.35rem;">
+                    <div class="role-icon"><i class="fa-solid fa-microphone-lines"></i></div>
+                    <div class="role-title">Artist / Creator</div>
+                    <div class="role-desc">Upload albums, publish songs, and manage catalog.</div>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group" id="stageNameGroup" style="display: none;">
+            <label for="{{ form.stage_name.id_for_label }}">Artist / Stage Name (Optional)</label>
+            {{ form.stage_name }}
+            {% if form.stage_name.errors %}<div class="form-errors">{{ form.stage_name.errors }}</div>{% endif %}
+            <div class="form-help">The creator name displayed publicly on your albums and tracks.</div>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="form-errors">{{ form.username.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="form-errors">{{ form.email.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password.id_for_label }}">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="form-errors">{{ form.password.errors }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password_confirm.id_for_label }}">Confirm Password</label>
+            {{ form.password_confirm }}
+            {% if form.password_confirm.errors %}<div class="form-errors">{{ form.password_confirm.errors }}</div>{% endif %}
+        </div>
+
+        <button type="submit" class="btn-primary-custom" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            <i class="fa-solid fa-sparkles"></i>
+            <span>Register Account</span>
+        </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.75rem; font-size: 0.9rem; color: var(--text-muted);">
+        Already have an account? 
+        <a href="{% url 'music:login' %}" style="color: var(--accent-primary); font-weight: 600;">Sign in here</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const roleInputs = document.querySelectorAll('input[name="role"]');
+        const stageGroup = document.getElementById('stageNameGroup');
+
+        function updateStageVisibility() {
+            const selected = document.querySelector('input[name="role"]:checked');
+            if (stageGroup) {
+                stageGroup.style.display = (selected && selected.value === 'artist') ? 'block' : 'none';
+            }
+        }
+
+        roleInputs.forEach(input => {
+            input.addEventListener('change', updateStageVisibility);
+        });
+
+        // Click card also toggles radio
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const radio = card.querySelector('input[type="radio"]');
+                if (radio && e.target !== radio) {
+                    radio.checked = true;
+                    updateStageVisibility();
+                }
+            });
+        });
+
+        updateStageVisibility();
+    });
+</script>
+{% endblock %}
