@@ -14,6 +14,7 @@ The project is fully containerized with **Docker** and pre-configured for one-cl
 ## Table of Contents
 
 - [Overview](#overview)
+- [Screenshots](#screenshots)
 - [Key Features](#key-features)
 - [Architecture & Tech Stack](#architecture--tech-stack)
 - [Project Layout](#project-layout)
@@ -36,7 +37,28 @@ It is intended as a **portfolio project, learning resource, or personal self-hos
 
 ---
 
+## 📸 Screenshots
+
+### 1. Home Library & Persistent Audio Player
+*Browse album collections, filter by genre, and control playback with the persistent bottom audio player.*
+![WaveStream Home Library](docs/screenshots/01_home_library.png)
+
+### 2. Album Details & Tracklist
+*View high-res album artwork, metadata, track durations, and trigger individual songs while playback continues seamlessly.*
+![WaveStream Album Detail](docs/screenshots/02_album_detail.png)
+
+### 3. Global Songs Catalogue
+*Search across the entire catalog with real-time filtering, audio duration counters, and one-click AJAX favorites.*
+![WaveStream Songs Catalogue](docs/screenshots/03_songs_catalogue.png)
+
+### 4. Creator Studio: Add & Edit Album
+*Role-restricted creator portal with live client-side image preview for album artwork uploads.*
+![WaveStream Add Album](docs/screenshots/04_add_album.png)
+
+---
+
 ## Key Features
+
 
 ### 🎧 Persistent Bottom Audio Player
 - **Full Player Controls**: Play/pause, track scrubbing with elapsed/remaining timestamps (`mm:ss`), previous/next, shuffle, and repeat modes.
