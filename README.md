@@ -3,10 +3,14 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-5.0+-092E20.svg?style=flat&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Render-46E3B7.svg?style=flat&logo=render&logoColor=white)](https://wavestream-music.onrender.com/music/)
 
 WaveStream is a self-hosted music catalog and web streaming application built with **Django 5** and **vanilla ES6 JavaScript**. It features an interactive persistent audio player, album and track management, role-based permissions (Artists vs. Listeners), and a modern dark interface inspired by modern streaming services.
 
 The project is fully containerized with **Docker** for easy local and cloud deployment.
+
+> **🚀 Live Demo**: [https://wavestream-music.onrender.com/music/](https://wavestream-music.onrender.com/music/)
+
 
 ---
 
