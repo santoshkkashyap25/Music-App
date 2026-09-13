@@ -3,11 +3,10 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-5.0+-092E20.svg?style=flat&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](LICENSE)
 
 WaveStream is a self-hosted music catalog and web streaming application built with **Django 5** and **vanilla ES6 JavaScript**. It features an interactive persistent audio player, album and track management, role-based permissions (Artists vs. Listeners), and a modern dark interface inspired by modern streaming services.
 
-The project is fully containerized with **Docker** and pre-configured for one-click deployment on **Render** (or any container hosting provider).
+The project is fully containerized with **Docker** for easy local and cloud deployment.
 
 ---
 
@@ -21,11 +20,8 @@ The project is fully containerized with **Docker** and pre-configured for one-cl
 - [Prerequisites](#prerequisites)
 - [Local Setup (Virtualenv)](#local-setup-virtualenv)
 - [Running with Docker](#running-with-docker)
-- [Deployment on Render](#deployment-on-render)
 - [User Roles & Permissions](#user-roles--permissions)
 - [Testing](#testing)
-- [Honest Limitations & Considerations](#honest-limitations--considerations)
-- [License](#license)
 
 ---
 
@@ -59,7 +55,6 @@ It is intended as a **portfolio project, learning resource, or personal self-hos
 
 ## Key Features
 
-
 ### 🎧 Persistent Bottom Audio Player
 - **Full Player Controls**: Play/pause, track scrubbing with elapsed/remaining timestamps (`mm:ss`), previous/next, shuffle, and repeat modes.
 - **Volume & Equalizer**: Real-time volume slider, mute toggle, and an animated playback equalizer.
@@ -80,7 +75,7 @@ It is intended as a **portfolio project, learning resource, or personal self-hos
 
 ### 🚀 Production-Ready & Dockerized
 - **WhiteNoise Integration**: Static assets are served directly through Django with compression and cache headers.
-- **Database Flexibility**: Uses `dj-database-url` to connect automatically to PostgreSQL (e.g. Render Postgres) when `DATABASE_URL` is present, with automatic fallback to SQLite for local development.
+- **Database Flexibility**: Uses `dj-database-url` to connect automatically to PostgreSQL when `DATABASE_URL` is present, with automatic fallback to SQLite for local development.
 - **Automated Seeding**: Startup scripts verify the database and automatically seed sample demo albums, songs, and SVG vinyl covers if the database is fresh.
 
 ---
@@ -95,13 +90,12 @@ It is intended as a **portfolio project, learning resource, or personal self-hos
 | **Database** | SQLite / PostgreSQL | Local file database with seamless `DATABASE_URL` PostgreSQL support |
 | **Frontend** | Vanilla JavaScript (ES6+), HTML5, CSS3 | Custom dark glassmorphic theme, Web Audio API tone synthesis, zero heavy JS frameworks |
 | **Container** | Docker & Docker Compose | Lightweight `python:3.11-slim` image, multi-arch support, non-buffered logging |
-| **Hosting** | Render | Native Blueprint deployment via `render.yaml` |
 
 ---
 
 ## Project Layout
 
-```text
+```
 Music-App/
 ├── Dockerfile                  # Production container definition
 ├── docker-compose.yml          # Local container orchestration
@@ -203,9 +197,6 @@ docker compose up --build -d
 - View logs: `docker compose logs -f`
 - Stop the container: `docker compose down`
 
-> [!NOTE]
-> **Windows Users**: Access the application via `http://127.0.0.1:8000` rather than `http://localhost:8000`. On some Windows configurations with WSL2, `localhost` resolves to IPv6 `[::1]`, which can cause connection resets with Docker port proxies. `127.0.0.1` routes directly over IPv4 without issue.
-
 ### Using Standard Docker Commands
 ```bash
 # 1. Build the Docker image
@@ -220,34 +211,6 @@ docker logs -f music-app-live
 # 4. Stop container
 docker stop music-app-live
 ```
-
----
-
-## Deployment on Render
-
-This project includes a native `render.yaml` Blueprint file for automated deployment.
-
-### Option A: Render Blueprint (Recommended)
-1. Push this repository to your GitHub account.
-2. Navigate to your [Render Dashboard](https://dashboard.render.com/).
-3. Click **New +** → **Blueprint**.
-4. Connect your GitHub repository.
-5. Render detects [render.yaml](render.yaml) and configures:
-   - Environment: `Docker`
-   - Plan: `Free`
-   - Health check path: `/music/`
-   - Automatic environment variables (`SECRET_KEY`, `DEBUG=False`, `WEB_CONCURRENCY=2`).
-6. Click **Apply**. Render will build the container, run migrations, collect static assets, seed demo data, and deploy the live app.
-
-### Option B: Manual Web Service
-1. In Render, click **New +** → **Web Service**.
-2. Connect your repository.
-3. Select **Docker** as the Runtime.
-4. Set the following environment variables:
-   - `DEBUG`: `False`
-   - `SECRET_KEY`: (Provide a long, random string)
-   - `WEB_CONCURRENCY`: `2`
-5. Click **Create Web Service**.
 
 ---
 
@@ -275,7 +238,7 @@ python manage.py test
 ```
 
 Expected output:
-```text
+```
 Creating test database for alias 'default'...
 ............
 ----------------------------------------------------------------------
@@ -284,23 +247,3 @@ Ran 12 tests in ~1.5s
 OK
 Destroying test database for alias 'default'...
 ```
-
----
-
-## Honest Limitations & Considerations
-
-To set realistic expectations:
-
-1. **Ephemeral Filesystems in Free Cloud Containers**:
-   - In free cloud container environments (such as Render's free tier), the container filesystem is ephemeral. Files uploaded by users (new album art or uploaded MP3s) will reset when the container spins down due to inactivity.
-   - *Production Solution*: For production environments requiring persistent user uploads, attach a persistent disk (e.g. Render Persistent Disk mounted at `/app/media`) or integrate an S3-compatible object storage provider (e.g. AWS S3, Cloudflare R2 via `django-storages`).
-2. **Audio Streaming Scope**:
-   - Audio is streamed using standard HTTP range responses provided by Django/Gunicorn and handled natively by the browser. It is well-suited for MP3/WAV tracks, but does not use adaptive bitrate streaming (HLS/DASH).
-3. **Synthesis Engine**:
-   - The procedural synthesizer is an intentional fallback for demoing and previewing tracks when physical audio files are not uploaded. It uses simple Web Audio oscillator chords.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
