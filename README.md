@@ -34,48 +34,24 @@ WaveStream started as a classic Django music library project and was rebuilt int
 
 ## 📸 Screenshots
 
-### 1. Home Library & Persistent Audio Player
-*Browse album collections, filter by genre, and control playback with the persistent bottom audio player.*
-![WaveStream Home Library](docs/screenshots/01_home_library.png)
-
-### 2. Album Details & Tracklist
-*View high-res album artwork, metadata, track durations, and trigger individual songs while playback continues seamlessly.*
-![WaveStream Album Detail](docs/screenshots/02_album_detail.png)
-
-### 3. Global Songs Catalogue
-*Search across the entire catalog with real-time filtering, audio duration counters, and one-click AJAX favorites.*
-![WaveStream Songs Catalogue](docs/screenshots/03_songs_catalogue.png)
-
-### 4. Creator Studio: Add & Edit Album
-*Role-restricted creator portal with live client-side image preview for album artwork uploads.*
-![WaveStream Add Album](docs/screenshots/04_add_album.png)
+| **Home Library & Audio Player** | **Album Details & Tracklist** |
+|:---:|:---:|
+| ![Home Library](docs/screenshots/01_home_library.png) | ![Album Details](docs/screenshots/02_album_detail.png) |
+| **Global Songs Catalogue** | **Creator Studio (Add Album)** |
+| ![Songs Catalogue](docs/screenshots/03_songs_catalogue.png) | ![Add Album](docs/screenshots/04_add_album.png) |
 
 ---
 
 ## Key Features
 
-### 🎧 Persistent Bottom Audio Player
-- **Full Player Controls**: Play/pause, track scrubbing with elapsed/remaining timestamps (`mm:ss`), previous/next, shuffle, and repeat modes.
-- **Volume & Equalizer**: Real-time volume slider, mute toggle, and an animated playback equalizer.
-- **Dual Audio Engine**:
-  - Plays uploaded user audio files (`.mp3`, `.wav`) via the standard HTML5 Audio API.
-  - **Procedural Synthesizer Fallback**: Tracks without uploaded audio files automatically generate harmonic ambient synthesizer tones using the browser's native Web Audio API, so the app remains interactive and audible right out of the box.
+- **🎧 Persistent Audio Player**: Full playback controls (play/pause, seek scrub bar, shuffle, repeat, volume, mute) and animated equalizer.
+- **🎹 Dual Audio Engine**: Streams uploaded audio (`.mp3`, `.wav`) with procedural Web Audio synthesizer fallback for demo tracks.
+- **💿 Catalog Management**: Full CRUD for albums and tracklists with live client-side artwork preview.
+- **🔍 Search & Genre Filters**: Real-time multi-field search and quick genre filter pills (Synthwave, Lo-Fi, Electronic, Classical, Pop).
+- **❤️ Instant AJAX Favorites**: One-click async favoriting for tracks and albums without page reloads.
+- **👥 Role-Based Access Control**: Creator/Artist accounts manage albums and uploads; Listener accounts browse, stream, and favorite.
+- **🐳 Dockerized & Cloud Ready**: Production Gunicorn + WhiteNoise static compression with automatic PostgreSQL / SQLite switching and automated demo seeding.
 
-### 💿 Music Management & Discovery
-- **Album & Track Cataloging**: Create, edit, and organize albums and tracklists.
-- **Live Image Preview**: Instant client-side artwork preview during album creation.
-- **Search & Genre Filtering**: Search albums by title, artist, genre, or track name, paired with quick genre pills (Synthwave, Lo-Fi, Electronic, Classical, Pop).
-- **AJAX Favorites**: Toggle album and song favorites asynchronously without jarring page reloads.
-
-### 👥 User Roles & Access Control
-- **Listener Accounts**: Browse catalog, stream music, search, and curate personal favorites.
-- **Artist / Creator Accounts**: Full catalog permissions—publish albums, upload audio files, and edit metadata.
-- **Ownership Protection**: Artists can only edit or delete albums and songs that belong to them.
-
-### 🚀 Production-Ready & Dockerized
-- **WhiteNoise Integration**: Static assets are served directly through Django with compression and cache headers.
-- **Database Flexibility**: Uses `dj-database-url` to connect automatically to PostgreSQL when `DATABASE_URL` is present, with automatic fallback to SQLite for local development.
-- **Automated Seeding**: Startup scripts verify the database and automatically seed sample demo albums, songs, and SVG vinyl covers if the database is fresh.
 
 ---
 
@@ -148,9 +124,8 @@ Open your browser at [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
 
 ## Running with Docker
 
-### Using Docker Compose (Recommended for local testing)
+Run the containerized application using Docker Compose:
 
-Run the following command in the project root:
 ```bash
 docker compose up --build -d
 ```
@@ -159,20 +134,6 @@ docker compose up --build -d
 - View logs: `docker compose logs -f`
 - Stop the container: `docker compose down`
 
-### Using Standard Docker Commands
-```bash
-# 1. Build the Docker image
-docker build -t music-app .
-
-# 2. Run the container
-docker run -d -p 8000:8000 --name music-app-live -e DEBUG=True -e SECRET_KEY=your-dev-secret music-app
-
-# 3. View container logs
-docker logs -f music-app-live
-
-# 4. Stop container
-docker stop music-app-live
-```
 
 ---
 
