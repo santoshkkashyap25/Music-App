@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Local databases & caches
+db.sqlite3
+*.sqlite3-journal
+
+# Static collected files (collected inside container)
+staticfiles/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Documentation & Scratch
+.gemini/
+*.log

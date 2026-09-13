@@ -120,6 +120,46 @@ Open your browser at `http://127.0.0.1:8000/`.
 
 ---
 
+## 🐳 Docker Deployment
+
+### Run locally with Docker Compose
+```bash
+docker compose up --build
+```
+Open `http://localhost:8000` in your browser.
+
+### Build and run standalone Docker container
+```bash
+# Build image
+docker build -t music-app .
+
+# Run container
+docker run -p 8000:8000 -e DEBUG=True -e SECRET_KEY=your-secret-key music-app
+```
+
+---
+
+## 🚀 Deploying to Render
+
+### Method 1: Render Blueprint (Recommended)
+1. Push your code to GitHub.
+2. Log in to [Render Dashboard](https://dashboard.render.com/).
+3. Click **New +** → **Blueprint**.
+4. Connect your repository. Render will automatically detect `render.yaml` and configure the Web Service with Docker runtime, health checks, and environment variables.
+5. Click **Apply**.
+
+### Method 2: Manual Web Service Creation
+1. Click **New +** → **Web Service**.
+2. Select your repository.
+3. Choose **Docker** as the Runtime.
+4. Set Environment Variables:
+   - `DEBUG`: `False`
+   - `SECRET_KEY`: (Generate or provide a secure key)
+   - `WEB_CONCURRENCY`: `2`
+5. Click **Deploy Web Service**.
+
+---
+
 ## 📸 Key Routes
 
 | Route | Description |
@@ -135,3 +175,4 @@ Open your browser at `http://127.0.0.1:8000/`.
 
 ## 📄 License
 This project is licensed under the MIT License.
+
