@@ -16,12 +16,12 @@ The project is fully containerized with **Docker** for easy local and cloud depl
 - [Screenshots](#screenshots)
 - [Key Features](#key-features)
 - [Architecture & Tech Stack](#architecture--tech-stack)
-- [Project Layout](#project-layout)
 - [Prerequisites](#prerequisites)
 - [Local Setup (Virtualenv)](#local-setup-virtualenv)
 - [Running with Docker](#running-with-docker)
 - [User Roles & Permissions](#user-roles--permissions)
 - [Testing](#testing)
+
 
 ---
 
@@ -93,45 +93,8 @@ It is intended as a **portfolio project, learning resource, or personal self-hos
 
 ---
 
-## Project Layout
-
-```
-Music-App/
-├── Dockerfile                  # Production container definition
-├── docker-compose.yml          # Local container orchestration
-├── entrypoint.sh               # Migration, static collection & startup script
-├── render.yaml                 # Render Blueprint specification
-├── requirements.txt            # Python dependencies
-├── manage.py                   # Django CLI
-├── website/                    # Core project configuration
-│   ├── settings.py             # Settings (WhiteNoise, dj-database-url, CSRF, Storages)
-│   ├── urls.py                 # Root URL configuration & media routing
-│   └── wsgi.py                 # WSGI application entry
-└── music/                      # Main music application
-    ├── models.py               # Album, Song, and UserProfile models
-    ├── views.py                # CRUD views, AJAX toggle endpoints, auth flows
-    ├── urls.py                 # App route declarations
-    ├── forms.py                # AlbumForm, SongForm, UserRegisterForm
-    ├── tests.py                # Unit and integration test suite (12 tests)
-    ├── static/music/           # Frontend stylesheets & player script
-    │   ├── style.css           # Modern dark glassmorphic styling
-    │   ├── player.js           # Audio player engine & procedural synthesizer
-    │   └── images/             # Default SVG placeholders
-    ├── templates/music/        # HTML templates
-    │   ├── layout.html         # Base layout with navbar & audio player bar
-    │   ├── index.html          # Album grid discovery & genre filters
-    │   ├── detail.html         # Album tracklist & song upload modal
-    │   ├── songs.html          # Global tracks table
-    │   ├── album_form.html     # Add/edit album with live image preview
-    │   ├── login.html          # User login
-    │   └── register.html       # Role-selectable registration
-    └── management/commands/
-        └── seed_demo.py        # Demo catalogue seeder
-```
-
----
-
 ## Prerequisites
+
 
 - **Python**: 3.11 or higher
 - **pip**: Latest version
