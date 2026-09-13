@@ -29,7 +29,6 @@ The project is fully containerized with **Docker** for easy local and cloud depl
 
 WaveStream started as a classic Django music library project and was rebuilt into a full-featured web app with a responsive dark glassmorphic design, client-side player state management, and containerized deployment workflows.
 
-It is intended as a **portfolio project, learning resource, or personal self-hosted music catalogue**. It does not attempt to replicate a multi-tenant commercial streaming backend like Spotify; instead, it focuses on solid Django architecture, clean vanilla JavaScript (no heavy frontend frameworks), and frictionless containerized deployment.
 
 ---
 
